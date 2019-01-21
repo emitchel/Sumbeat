@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_for_an_artist">Search for an artist by name</string>
+    <string name="search_tooltip">Tap here to begin searching for your favorite artist!</string>
+    <string name="name_required">Name required</string>
+    <string name="search">Search</string>
+    <string name="searching">Searching…</string>
+    <string name="loading">Loading…</string>
+    <string name="no_network_connection">No network connection!</string>
+    <string name="retry">Retry</string>
+    <string name="service_error">There was problem with the service, please try again later</string>
+    <string name="artist_not_found">Hmm, can\'t find anything</string>
+    <string name="ok">Ok</string>
+</resources>

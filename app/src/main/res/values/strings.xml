@@ -1,0 +1,7 @@
+<resources>
+    <string name="share">Share</string>
+    <string name="app_name">Kotlin MVVM</string>
+    <string name="favorite_artists">Artists</string>
+    <string name="favorite_venues">Venues</string>
+    <string name="favorite_events">Events</string>
+</resources>

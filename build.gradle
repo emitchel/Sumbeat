@@ -1,0 +1,69 @@
+// Define versions in a single place
+ext {
+    // Sdk and tools
+    minSdkVersion = 21
+    targetSdkVersion = 28
+    compileSdkVersion = 28
+    buildToolsVersion = '26.0.2'
+
+    // App dependencies
+    supportLibraryVersion = '28.0.0'
+    contraintLayoutVersion = '1.1.3'
+    roomVersion = "2.1.0-alpha03"
+    daggerVersion = "2.19"
+    okhttpVersion = "3.7.0"
+    retrofitVersion = "2.5.0"
+    architectureComponentsVersion = "2.0.0"
+    lifecycleVersion = "2.0.0"
+    testRuleVersion = "1.1.0"
+    robolectricVersion = '3.6.1'
+    mockitoVersion = '2.+'
+    mockitoKotlinVersion = '1.5.0'
+    junitVersion = '4.12'
+    runnerVersion = '1.0.2'
+    espressoVersion = '3.1.0'
+    coroutinesVersion = '1.0.1'
+
+    // Architecture Components dependencies
+    archLifecycleVersion = "1.1.1"
+}
+buildscript {
+    ext.kotlinVersion = '1.3.10'
+    ext.gradleVersion = '3.2.1'
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:3.3.0"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+
+        //without this, dagger version above 2.16 breaks with androidx (jetifier) (as of 11/27/2018)
+        //https://github.com/google/dagger/issues/1245
+        //https://issuetracker.google.com/issues/115738511
+        classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta02'
+    }
+}
+
+apply plugin: 'kotlin'
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}

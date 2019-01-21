@@ -1,0 +1,120 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "mvvm.kotlin.nerdery.com"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation":
+                                     "$projectDir/schemas".toString()]
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            buildConfigField 'String', "BandsInTownApiKey", AndroidBaseKotlinMVVM_BandsInTownApiKey
+            buildConfigField("String", "BandsInTownUrl", "\"https://rest.bandsintown.com/\"")
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField 'String', "BandsInTownApiKey", AndroidBaseKotlinMVVM_BandsInTownApiKey
+            buildConfigField("String", "BandsInTownUrl", "\"https://rest.bandsintown.com/\"")
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0-alpha02'
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+
+
+    implementation "androidx.room:room-runtime:$roomVersion"
+    implementation "androidx.room:room-rxjava2:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+
+    // Kotlin Android Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+
+    //Retrofit + Coroutines
+    implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
+
+    //dagger
+    implementation "com.google.dagger:dagger:$daggerVersion"
+    implementation "com.google.dagger:dagger-android:$daggerVersion"
+    implementation "com.google.dagger:dagger-android-support:$daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
+    kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
+
+    //okhttp
+    implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
+
+    //Threeten ABP
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.1.1'
+
+    //retrofit
+    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofitVersion"
+
+    //picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+    //gson
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    //stetho
+    implementation 'com.facebook.stetho:stetho:1.5.0'
+
+    //material serach bar
+    implementation 'com.github.mancj:MaterialSearchBar:0.8.1'
+
+    //tooltip
+    implementation 'com.github.florent37:viewtooltip:1.2.0'
+
+    //testing
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-inline:$mockitoVersion"
+    testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
+    testImplementation 'androidx.arch.core:core-testing:' + architectureComponentsVersion
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation('androidx.arch.core:core-testing:' + architectureComponentsVersion, {
+        exclude group: 'com.android.support', module: 'support-compat'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-core-utils'
+    })
+    androidTestImplementation 'androidx.test:runner:' + testRuleVersion
+    androidTestImplementation 'androidx.test:rules:' + testRuleVersion
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:' + espressoVersion
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:' + espressoVersion
+    androidTestImplementation 'androidx.test.espresso:espresso-accessibility:' + espressoVersion
+    androidTestImplementation 'androidx.test.espresso:espresso-web:' + espressoVersion
+    androidTestImplementation 'androidx.test.espresso.idling:idling-concurrent:' + espressoVersion
+    androidTestImplementation 'androidx.test.espresso:espresso-idling-resource:' + espressoVersion
+    androidTestImplementation('androidx.test.espresso:espresso-core:' + espressoVersion, {
+        exclude group: "com.android.support", module: "support-annotations"
+    })
+
+}

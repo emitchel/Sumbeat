@@ -15,7 +15,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:padding="@dimen/default_margin"
-        tools:context=".ui.main.MainFragment"
+        tools:context="com.erm.artists.ui.main.MainFragment"
         >
 
         <requestFocus android:id="@+id/requestFocus"/>

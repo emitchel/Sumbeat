@@ -16,13 +16,13 @@
             app:layout_constraintTop_toBottomOf="@id/ll_search_wrapper"
             >
 
-        <mvvm.kotlin.nerdery.com.ui.view.NoScrollViewPager
+        <com.erm.artists.ui.view.NoScrollViewPager
                 android:id="@+id/view_pager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 >
 
-        </mvvm.kotlin.nerdery.com.ui.view.NoScrollViewPager>
+        </com.erm.artists.ui.view.NoScrollViewPager>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

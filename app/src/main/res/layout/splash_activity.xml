@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         >
 
-    <com.nerdery.artists.ui.view.WavesView
+    <com.erm.artists.ui.view.WavesView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:waveColor="@color/white"

@@ -1,12 +1,15 @@
 apply plugin: 'com.android.application'
+
 apply plugin: 'kotlin-android'
+
 apply plugin: 'kotlin-android-extensions'
+
 apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.erm.artists"
+        applicationId "com.nerdery.artists"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
@@ -89,7 +92,7 @@ dependencies {
     implementation 'com.github.florent37:viewtooltip:1.2.0'
 
     //testing
-    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
@@ -114,4 +117,8 @@ dependencies {
         exclude group: "com.android.support", module: "support-annotations"
     })
 
+    // required if you want to use Mockito for unit tests
+    testImplementation 'org.mockito:mockito-core:2.23.4'
+    // required if you want to use Mockito for Android tests
+    androidTestImplementation 'org.mockito:mockito-android:2.7.22'
 }

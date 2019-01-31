@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="upcoming">Upcoming</string>
+    <string name="details">Details</string>
+    <string name="website">Website</string>
+    <string name="visit_website">Visit Website</string>
+    <string name="favorite">Favorite</string>
+    <string name="unfavorite">Remove from favorites</string>
+    <string name="events">Events</string>
+    <string name="navigate">Navigate</string>
+    <string name="no_events">No Upcoming Events</string>
+    <string name="lineup">Lineup</string>
+    <string name="event_location">%s, %s, %s</string>
+    <string name="upcoming_events">%d Upcoming Events</string>
+</resources>

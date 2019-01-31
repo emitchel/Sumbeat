@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_favorite_artists">No Favorite Artists</string>
+    <string name="no_favorite_events">No Favorite Events</string>
+    <string name="removed_favorite">Removed %s from favorites</string>
+    <string name="undo">Undo</string>
+</resources>

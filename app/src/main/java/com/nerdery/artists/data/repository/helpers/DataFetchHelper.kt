@@ -34,7 +34,7 @@ import timber.log.Timber
  */
 abstract class DataFetchHelper<T>(
     val tag: String,
-    private val dataFetchStyle: DataFetchStyle? = DataFetchStyle.NETWORK_FIRST_LOCAL_FAILOVER,
+    private val dataFetchStyle: DataFetchStyle? = DataFetchStyle.LOCAL_FIRST_NETWORK_REFRESH_ALWAYS,
     private val sharedPreferences: SharedPreferences? = null,
     private val cacheKey: String? = null,
     private val cacheDescriptor: String? = "",

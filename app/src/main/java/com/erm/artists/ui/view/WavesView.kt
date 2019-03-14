@@ -18,6 +18,9 @@ class WavesView
 @JvmOverloads
 /**
  * Went for something similar to https://www.youtube.com/watch?v=00LiH7anqkE
+ *
+ * Kinda janky and doesn't always provide the most aesthetic waves
+ *
  * @param context Context
  * @param attrs AttributeSet?
  * @param defStyleAttr Int
@@ -40,7 +43,8 @@ constructor(
     private var animatedWaveOffset = 0f
         set(value) {
             field = value
-            if (value <= 0.05) {
+            if (value <= 0.1) {
+                //every time the wave "finishes" generate a new wave to animate
                 generateRandomFunctionForHeightOfWaves()
             }
             postInvalidateOnAnimation()
@@ -97,6 +101,8 @@ constructor(
 
     fun endWaves(callback: (() -> Unit)) {
         waveAnimator?.addUpdateListener {
+            //when we want to the waves to end, we wait for the animated value to reach it's peak before calling back
+            //in the middle
             if (it.animatedValue as Float >= .9f) {
                 waveAnimator?.pause()
                 callback()
@@ -109,6 +115,7 @@ constructor(
         super.onDetachedFromWindow()
     }
 
+    //These are comfy ranges that give decent sin waves
     private fun generateRandomFunctionForHeightOfWaves() {
         val verticalSpread = (100..120).shuffled().first()
         println("verticalSpread = $verticalSpread")
@@ -119,6 +126,7 @@ constructor(
         println("height $height")
 
         paths.forEach { wave ->
+            //thank you pre calc :sunglasses:
             wave.maxHeight = verticalSpread *
                     (Math.sin((wave.xPosition.toDouble() * horizontalSpread) + horizontalShift) + height)
         }

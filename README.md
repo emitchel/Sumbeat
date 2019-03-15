@@ -1,4 +1,5 @@
-# MVVM Architecture Using Coroutines 
+# Sumbeat
+### MVVM Architecture Using Coroutines 
 This app is built with Kotlin, using MVVM architecture & coroutines. This showcase app is meant to explore and define use cases for recently released components.
 
 ## Initial Setup

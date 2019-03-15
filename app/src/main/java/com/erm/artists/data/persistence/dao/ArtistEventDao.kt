@@ -15,6 +15,9 @@ abstract class ArtistEventDao : BaseDao<ArtistEvent>() {
     @Query("SELECT * FROM ArtistEvent WHERE artistId=:artistId")
     abstract fun getEventsByArtistId(artistId: Long): List<ArtistEvent>?
 
+    @Query("SELECT * FROM ArtistEvent WHERE id=:eventId")
+    abstract fun findEventById(eventId: Long): ArtistEvent?
+
     @Ignore
     fun getEventsByArtistIdAndEventDate(artistId: Long, eventDate: EventDate): List<ArtistEvent>? {
         TODO("Abstract this function and support event date search logic")
@@ -33,24 +36,17 @@ abstract class ArtistEventDao : BaseDao<ArtistEvent>() {
     abstract fun unfavoriteArtistEvent(id: Long)
 
     @Transaction
-    override fun upsert(objList: List<ArtistEvent>) {
+    open fun upsert(objList: List<ArtistEvent>) {
         //this isn't ideal, in hindsight, should have used a junction table to keep track of favorite artists/events
-        if (objList.isNotEmpty()) {
-            val insertResult = insert(objList)
-            val updateList = arrayListOf<ArtistEvent>()
-            val favoriteEventsFromArtist = getFavoriteEventsByArtist(objList[0].artistId!!)
-
-            for (i in insertResult.indices) {
-                if (insertResult[i] == -1L) {
-                    updateList.add(objList[i].apply {
-                        favorite = favoriteEventsFromArtist?.find { it.id == id }?.favorite ?: false
-                    })
+        objList.forEach { event ->
+            findEventById(event.id!!)?.let { existingEvent ->
+                event.apply {
+                    //persisting columns that aren't returned from API
+                    favorite = existingEvent.favorite
                 }
+                delete(existingEvent)
             }
-
-            if (!updateList.isEmpty()) {
-                update(updateList)
-            }
+            insert(event)
         }
     }
 }

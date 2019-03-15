@@ -35,16 +35,22 @@ abstract class ArtistDao : BaseDao<Artist>() {
     @Query("SELECT * FROM Artist WHERE favorite = 1")
     abstract fun getFavoriteArtistsWithEvents(): List<ArtistWithEvents>?
 
-    @Transaction
-    override fun upsert(artist: Artist) {
-        //this isn't ideal, in hindsight, should have used a junction table to keep track of favorite artists/events
-        val insertResult = insert(artist)
+    @Query("DELETE FROM Artist")
+    abstract fun deleteAll()
 
-        if (insertResult == -1L) {
-            val existingArtist = findArtistById(artist.id!!)
-            update(artist.apply {
-                favorite = existingArtist?.favorite ?: false
-            })
+    @Query("SELECT * FROM Artist")
+    abstract fun getAll(): List<Artist>
+
+    @Transaction
+    open fun upsert(artist: Artist) {
+        //this isn't ideal, in hindsight, should have used a junction table to keep track of favorite artists/events
+        findArtistById(artist.id!!)?.let { existingArtist ->
+            artist.apply {
+                //persisting columns that aren't returned from API
+                favorite = existingArtist.favorite
+            }
+            delete(existingArtist)
         }
+        insert(artist)
     }
 }

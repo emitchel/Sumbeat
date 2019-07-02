@@ -2,13 +2,14 @@ package com.erm.artists.ui.details
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
 import com.erm.artists.R
 import com.erm.artists.data.model.entity.Artist
 import com.erm.artists.data.model.relation.EventWithArtist
 import com.erm.artists.data.repository.impl.BandsInTownArtistRepository
 import com.erm.artists.ui.base.BaseViewModel
 import com.erm.artists.ui.base.StatefulResource
+import kotlinx.coroutines.*
 import javax.inject.Inject
 
 class DetailsActivityViewModelImpl
@@ -56,7 +57,7 @@ class DetailsActivityViewModelImpl
                     setState(StatefulResource.State.ERROR_NETWORK)
                 }
             }
-            artistDetailsResource.isApiIssue() -> //TODO 4xx isn't necessarily a service error, expand this to sniff http code before saying service error
+            artistDetailsResource.isApiIssue() ->
                 mutableArtistDetails.value = StatefulResource<Artist?>()
                     .apply {
                     setState(StatefulResource.State.ERROR_API)

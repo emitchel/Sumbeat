@@ -27,7 +27,8 @@ class BandsInTownArtistRepository @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) : BaseRepository(), ArtistRepository {
 
-    override suspend fun getArtistByName(name: String): Deferred<Resource<Artist?>> {
+    override suspend fun getArtistByName(name: String): Deferred<Resource<Artist?>>  {
+
         val dataFetchHelper = object : DataFetchHelper.LocalFirstUntilStale<Artist?>(
             "Artist",
             sharedPreferences,

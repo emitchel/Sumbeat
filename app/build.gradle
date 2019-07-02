@@ -34,6 +34,19 @@ android {
             buildConfigField("String", "BandsInTownUrl", "\"https://rest.bandsintown.com/\"")
         }
     }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/atomicfu.kotlin_module'
+    }
+
 }
 
 dependencies {
@@ -45,6 +58,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0-alpha02'
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
 
 
     implementation "androidx.room:room-runtime:$roomVersion"

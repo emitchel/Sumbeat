@@ -8,10 +8,7 @@ import com.erm.artists.data.repository.helpers.DataFetchHelper.DataFetchStyle
 import com.erm.artists.data.repository.helpers.DataFetchHelper.DataFetchStyle.*
 import com.erm.artists.util.RepositoryUtil
 import com.erm.artists.util.onMainThread
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import retrofit2.Response
 import timber.log.Timber
 
@@ -20,7 +17,7 @@ import timber.log.Timber
  *
  * Depending on the style chosen, some or all methods may be required for the functionality to work correctly
  *
- * [DataFetchHelper.fetchDataIOAsync] returns a deferred async which should be consumed at the view model layer
+ * [DataFetchHelper.fetchDataAsync] returns a deferred async which should be consumed at the view model layer
  *
  * @param T The data type this class is fetching
  * @property tag String A name for the fetcher for logging reasons
@@ -342,6 +339,7 @@ abstract class DataFetchHelper<T>(
             }
             LOCAL_FIRST_NETWORK_REFRESH_ALWAYS -> {
                 resource.data = getDataFromLocal()
+                //TODO:
                 //always refreshing following it
                 val dataFromNetwork =
                     refreshDataFromNetwork(resource, LOCAL_FIRST_NETWORK_REFRESH_ALWAYS)

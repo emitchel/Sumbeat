@@ -5,7 +5,7 @@ import org.junit.Test
 
 class Golfer(val name: String, val handicap: Int)
 class Team(val golfer1: Golfer, val golfer2: Golfer) {
-    val ambrose = Math.round(((golfer1.handicap + golfer2.handicap) / 4).toDouble()).toInt()
+    val ambrose = Math.ceil(((golfer1.handicap.toDouble() + golfer2.handicap) / 4)).toInt()
     override fun toString(): String {
         return "${golfer1.name} + ${golfer2.name} = $ambrose"
     }
@@ -42,9 +42,9 @@ class TempTests {
 
     var groupB = mutableListOf(
         Golfer("John", 36),
-        Golfer("Cody", 41),
+        Golfer("Cody", 40),
         Golfer("Tay", 35),
-        Golfer("Chase", 38),
+        Golfer("Chase", 42),
         Golfer("Jeff", 42)
     )
 
@@ -53,7 +53,7 @@ class TempTests {
     fun testOutcomes() {
 
         //i iterations
-        for (i in 0 until 1000) {
+        for (i in 0 until 5000) {
             //shuffle
             groupA.shuffle()
             groupB.shuffle()
@@ -64,10 +64,13 @@ class TempTests {
                 teams.add(Team(groupA[teammate], groupB[teammate]))
             }
             lineups.add(Lineup(teams))
-            println("Added Lineup: \n${lineups.last()}")
+            //println("Added Lineup: \n${lineups.last()}")
         }
-        val smallestDeviation = lineups.minBy { it.standardDeviation!!.toInt() }
-        println("Smallest Deviation and best lineup is $smallestDeviation")
+        lineups.sortBy { it.standardDeviation!!.toInt() }
+        println("Smallest Deviations:")
+        lineups.take(1).forEach {
+            println(it)
+        }
 
     }
 }

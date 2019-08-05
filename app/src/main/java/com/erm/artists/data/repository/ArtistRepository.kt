@@ -29,7 +29,7 @@ interface ArtistRepository {
      */
     suspend fun getFavoriteArtistsWithEvents(): Deferred<Resource<List<ArtistWithEvents>?>>
 
-    suspend fun getFavoriteArtists():Deferred<Resource<List<Artist>?>>
+    suspend fun getFavoriteArtists(): Deferred<Resource<List<Artist>?>>
     suspend fun addFavoriteArtist(artistId: Long): Job
     suspend fun deleteFavoriteArtist(artistId: Long): Job
 

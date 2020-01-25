@@ -13,7 +13,7 @@ class BandsInTownInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val url = chain.request()
-            .url()
+            .url
             .newBuilder()
             .addQueryParameter(APP_ID, BuildConfig.BandsInTownApiKey)
             .build()

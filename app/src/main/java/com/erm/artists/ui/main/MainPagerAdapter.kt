@@ -16,12 +16,11 @@ class MainPagerAdapter(fragmentManager: FragmentManager, val context: Context) :
 
     private val registeredFragments = SparseArray<Fragment>()
 
-    override fun getItem(position: Int): Fragment? {
-        when (position) {
-            MainActivityViewModel.CurrentFragment.ARTISTS.ordinal -> return FavoriteArtistsFragment.newInstance()
-            MainActivityViewModel.CurrentFragment.EVENTS.ordinal -> return FavoriteEventsFragment.newInstance()
+    override fun getItem(position: Int): Fragment {
+        return when (position) {
+            MainActivityViewModel.CurrentFragment.ARTISTS.ordinal -> FavoriteArtistsFragment.newInstance()
+            else -> FavoriteEventsFragment.newInstance()
         }
-        return null
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {

@@ -18,9 +18,14 @@ class MainActivityViewModelImpl
 
     private val mutableLastSearchedArtists: MutableLiveData<StatefulResource<List<Artist>?>> = MutableLiveData()
     override val lastSearchedArtists: LiveData<StatefulResource<List<Artist>?>> = mutableLastSearchedArtists
+
+    private val mutableArtistSearch: SingleLiveEvent<StatefulResource<Artist?>> =
+        SingleLiveEvent()
+    override val artistSearch: LiveData<StatefulResource<Artist?>> = mutableArtistSearch
+    private var lastArtistNameSearched: String? = null
+
     override fun getLastSearchedArtists(numberOfArtists: Int) {
         launch {
-
             mutableLastSearchedArtists.value = StatefulResource.with(
                 StatefulResource.State.SUCCESS,
                 bandsInTownArtistRepository.getLastArtistsSearched(numberOfArtists).await()
@@ -28,10 +33,6 @@ class MainActivityViewModelImpl
         }
     }
 
-    private val mutableArtistSearch: SingleLiveEvent<StatefulResource<Artist?>> =
-        SingleLiveEvent()
-    override val artistSearch: LiveData<StatefulResource<Artist?>> = mutableArtistSearch
-    private var lastArtistNameSearched: String? = null
     override fun searchArtistByName(artistName: String) {
         launch {
             lastArtistNameSearched = artistName

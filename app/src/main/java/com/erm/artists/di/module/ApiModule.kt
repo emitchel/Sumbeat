@@ -54,7 +54,7 @@ class ApiModule {
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(bandsInTownInterceptor)
-            //.addInterceptor(httpLoggingInterceptor)
+            .addInterceptor(httpLoggingInterceptor)
             .addInterceptor(flipperInterceptor)
             .build()
     }

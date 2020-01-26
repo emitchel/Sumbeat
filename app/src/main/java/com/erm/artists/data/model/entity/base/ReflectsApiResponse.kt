@@ -3,11 +3,10 @@ package com.erm.artists.data.model.entity.base
 import com.erm.artists.data.model.api.base.ApiResponseObject
 
 /**
- * This binds a contract between the locally stored model and an API response,
- * basically saying "This model has a tight (or loose) coupling to the following API response object"
+ * This binds a contract between the locally stored model and an API response
  *
  * The idea is that locally stored models should NOT be the same model we get back from the API request,
- * this interface defines how they're related
+ * this interface defines how they're related.
  *
  * Recursive Generics
  * @param X The model that reflects the ApiResponseObject

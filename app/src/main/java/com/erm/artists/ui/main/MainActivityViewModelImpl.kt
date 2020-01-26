@@ -28,7 +28,7 @@ class MainActivityViewModelImpl
         launch {
             mutableLastSearchedArtists.value = StatefulResource.with(
                 StatefulResource.State.SUCCESS,
-                bandsInTownArtistRepository.getLastArtistsSearched(numberOfArtists).await()
+                bandsInTownArtistRepository.getLastArtistsSearched(numberOfArtists)
             )
         }
     }
@@ -37,7 +37,7 @@ class MainActivityViewModelImpl
         launch {
             lastArtistNameSearched = artistName
             mutableArtistSearch.value = StatefulResource.with(StatefulResource.State.LOADING)
-            val resource = bandsInTownArtistRepository.getArtistByName(artistName.trim()).await()
+            val resource = bandsInTownArtistRepository.getArtistByName(artistName.trim())
             when {
                 resource.hasData() -> {
                     //return the value

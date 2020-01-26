@@ -1,6 +1,5 @@
 package com.erm.artists.data.api
 
-import kotlinx.coroutines.Deferred
 import com.erm.artists.data.model.EventDate
 import com.erm.artists.data.model.api.ArtistEventResponse
 import com.erm.artists.data.model.api.ArtistResponse
@@ -15,13 +14,13 @@ import retrofit2.http.Query
 interface BandsInTownApi {
 
     @GET("/artists/{artistName}")
-    fun findArtistByName(
+    suspend fun findArtistByName(
         @Path("artistName") artistName: String
-    ): Deferred<Response<ArtistResponse>>
+    ): Response<ArtistResponse>
 
     @GET("/artists/{artistName}/events")
-    fun findArtistEvents(
+    suspend fun findArtistEvents(
         @Path("artistName") artistName: String,
         @Query("date") dateValue: EventDate
-    ): Deferred<Response<List<ArtistEventResponse>>>
+    ): Response<List<ArtistEventResponse>>
 }

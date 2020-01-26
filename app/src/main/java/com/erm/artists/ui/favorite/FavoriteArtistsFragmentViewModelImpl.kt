@@ -40,7 +40,7 @@ constructor(
         launch {
             favoriteArtists.value = StatefulResource.with(StatefulResource.State.LOADING)
             favoriteArtists.value =
-                StatefulResource.success(bandsInTownArtistRepository.getFavoriteArtists().await())
+                StatefulResource.success(bandsInTownArtistRepository.getFavoriteArtists())
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.erm.artists.di.component
 
 import android.app.Application
+import com.erm.artists.ArtistsApplication
 import com.erm.artists.di.module.ApiModule
 import com.erm.artists.di.module.ApplicationModule
 import com.erm.artists.di.module.PersistenceModule
@@ -24,15 +25,17 @@ import javax.inject.Singleton
 interface AppComponent {
     @Component.Builder
     interface Builder {
-        //"Providing" an instance of the application for modules
+        //"Providing" an instance of the application for modules, as opposed to the constructor approach
+        //this is faster
         @BindsInstance
         fun application(application: Application): Builder
 
         fun build(): AppComponent
     }
 
+    fun inject(application: ArtistsApplication)
     fun inject(baseActivity: BaseActivity)
-    fun inject(baseActivity: MainActivity)
-    fun inject(activity: DetailsActivity)
-    fun inject(fragment: BaseFragment)
+    fun inject(mainActivity: MainActivity)
+    fun inject(detailsActivity: DetailsActivity)
+    fun inject(baseFragment: BaseFragment)
 }

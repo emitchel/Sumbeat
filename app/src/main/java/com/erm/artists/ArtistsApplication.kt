@@ -15,9 +15,11 @@ import com.facebook.soloader.SoLoader
 import com.jakewharton.threetenabp.AndroidThreeTen
 import timber.log.Timber
 import timber.log.Timber.DebugTree
+import javax.inject.Inject
 
 
 class ArtistsApplication : Application() {
+    @Inject lateinit var networkFlipperPlugin : NetworkFlipperPlugin
     lateinit var component: AppComponent
     override fun onCreate() {
         super.onCreate()
@@ -26,6 +28,7 @@ class ArtistsApplication : Application() {
             // Required, see [com.erm.artists.di.component.AppComponent.Builder.application]
             .application(this)
             .build()
+        component.inject(this)
 
         //TODO use injected initializers to setup versions
 
@@ -42,8 +45,7 @@ class ArtistsApplication : Application() {
                 )
                 addPlugin(DatabasesFlipperPlugin(this@ArtistsApplication))
                 addPlugin(SharedPreferencesFlipperPlugin(this@ArtistsApplication))
-                //TODO this network plugin needs to be in the interceptor instantiation
-                addPlugin(NetworkFlipperPlugin())
+                addPlugin(networkFlipperPlugin)
                 start()
             }
         }

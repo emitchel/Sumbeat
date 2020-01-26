@@ -7,11 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.app.ActivityOptionsCompat
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.favorite_events_fragment.*
 import com.erm.artists.R
 import com.erm.artists.constants.BundleKey
 import com.erm.artists.data.model.relation.EventWithArtist
@@ -23,6 +21,8 @@ import com.erm.artists.ui.base.BaseFragment
 import com.erm.artists.ui.details.DetailsActivity
 import com.erm.artists.ui.events.EventsAdapter
 import com.erm.artists.util.IntentUtil
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.favorite_events_fragment.*
 
 class FavoriteEventsFragment : BaseFragment(), EventsAdapter.ArtistEventsListener {
 
@@ -32,7 +32,7 @@ class FavoriteEventsFragment : BaseFragment(), EventsAdapter.ArtistEventsListene
         }
     }
 
-    private lateinit var viewModel: FavoriteEventsFragmentViewModelImpl
+    private val viewModel by viewModels<FavoriteEventsFragmentViewModelImpl> { factory }
     private var adapter: EventsAdapter? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,17 +52,17 @@ class FavoriteEventsFragment : BaseFragment(), EventsAdapter.ArtistEventsListene
     }
 
     private fun setupObservers() {
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(FavoriteEventsFragmentViewModelImpl::class.java)
         viewModel.getFavoriteArtistEvents().observe(this, Observer { eventsWithArtist ->
             if (eventsWithArtist.isSuccessful()) {
                 if (eventsWithArtist.hasData() && eventsWithArtist.getData()!!.isNotEmpty()) {
                     adapter?.updateItems(eventsWithArtist.getData()!!.toMutableList()) ?: run {
-                        rv_favorite_events.layoutManager = LinearLayoutManager(this@FavoriteEventsFragment.activity)
+                        rv_favorite_events.layoutManager =
+                            LinearLayoutManager(this@FavoriteEventsFragment.activity)
                         adapter =
-                                EventsAdapter(
-                                    eventsWithArtist.getData()!!.toMutableList(),
-                                    this@FavoriteEventsFragment
-                                )
+                            EventsAdapter(
+                                eventsWithArtist.getData()!!.toMutableList(),
+                                this@FavoriteEventsFragment
+                            )
                         rv_favorite_events.adapter = adapter
                     }
                     ll_no_favorites_wrapper.gone()
@@ -99,7 +99,10 @@ class FavoriteEventsFragment : BaseFragment(), EventsAdapter.ArtistEventsListene
                 Snackbar.LENGTH_LONG
             )
                 .setAction(R.string.undo) {
-                    adapter?.addItem(eventWithArtist.apply { artistEvent?.favorite = true }, position)
+                    adapter?.addItem(
+                        eventWithArtist.apply { artistEvent?.favorite = true },
+                        position
+                    )
                     viewModel.undoFavoriteEventRemoval()
                     setEmptyListMessageVisibility()
                 }
@@ -120,7 +123,8 @@ class FavoriteEventsFragment : BaseFragment(), EventsAdapter.ArtistEventsListene
     override fun onArtistImageClicked(artistEvent: EventWithArtist, imageView: ImageView) {
         val detailsIntent = Intent(activity!!, DetailsActivity::class.java)
         detailsIntent.putExtra(BundleKey.ARTIST_NAME.name, artistEvent.artist!!.name)
-        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity!!, imageView, "artistImage")
+        val options =
+            ActivityOptionsCompat.makeSceneTransitionAnimation(activity!!, imageView, "artistImage")
         activity?.startActivity(detailsIntent, options.toBundle())
     }
 }

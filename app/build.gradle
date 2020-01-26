@@ -50,6 +50,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
 }
 
 dependencies {
@@ -64,6 +68,12 @@ dependencies {
 
     // Logging
     implementation "com.jakewharton.timber:timber:$timberVersion"
+
+    // core extensions
+    implementation "androidx.core:core-ktx:$coreKtxVersion"
+
+    // Fragment Extensions (maily for by viewModels)
+    implementation "androidx.fragment:fragment-ktx:$fragmentKtxVersion"
 
     // View Model
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
@@ -109,7 +119,7 @@ dependencies {
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
     debugImplementation "com.facebook.soloader:soloader:$soLoaderVersion"
     releaseImplementation "com.facebook.flipper:flipper-noop:$flipperVersion"
-    
+
     //material serach bar
     implementation "com.github.mancj:MaterialSearchBar:$materialSearchbarVersion"
 

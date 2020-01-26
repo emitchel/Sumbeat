@@ -9,7 +9,7 @@ import javax.inject.Inject
 abstract class BaseFragment : Fragment() {
 
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    lateinit var factory: ViewModelProvider.Factory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         component().inject(this)

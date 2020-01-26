@@ -4,23 +4,23 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import androidx.activity.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.snackbar.Snackbar
-import com.mancj.materialsearchbar.MaterialSearchBar
 import com.erm.artists.R
-import kotlinx.android.synthetic.main.main_activity.*
 import com.erm.artists.constants.BundleKey
 import com.erm.artists.data.model.entity.Artist
 import com.erm.artists.ui.base.BaseActivity
 import com.erm.artists.ui.base.StatefulResource
 import com.erm.artists.ui.details.DetailsActivity
+import com.google.android.material.snackbar.Snackbar
+import com.mancj.materialsearchbar.MaterialSearchBar
+import kotlinx.android.synthetic.main.main_activity.*
 import timber.log.Timber
 import java.util.*
 import kotlin.concurrent.schedule
 
 class MainActivity : BaseActivity() {
-    private lateinit var mainViewModel: MainActivityViewModel
+    private val mainViewModel by viewModels<MainActivityViewModelImpl> { factory }
 
     private var searchAdapter: MainActivitySearchAdapter? = null
     private var fragmentAdapter: MainPagerAdapter? = null
@@ -50,7 +50,7 @@ class MainActivity : BaseActivity() {
 
             if (it.itemId == R.id.navigation_artist) {
                 mainViewModel.currentFragment =
-                        MainActivityViewModel.CurrentFragment.ARTISTS
+                    MainActivityViewModel.CurrentFragment.ARTISTS
             } else if (it.itemId == R.id.navigation_venue) {
                 mainViewModel.currentFragment = MainActivityViewModel.CurrentFragment.EVENTS
             }
@@ -118,7 +118,6 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setupObservers() {
-        mainViewModel = ViewModelProviders.of(this, viewModelFactory).get(MainActivityViewModelImpl::class.java)
         mainViewModel.artistSearch.observe(this, Observer<StatefulResource<Artist?>> { resource ->
 
             snackBar?.dismiss()
@@ -126,18 +125,26 @@ class MainActivity : BaseActivity() {
             when {
                 resource.state == StatefulResource.State.LOADING -> {
                     snackBar =
-                            Snackbar.make(view_pager_wrapper, getString(R.string.searching), Snackbar.LENGTH_INDEFINITE)
+                        Snackbar.make(
+                            view_pager_wrapper,
+                            getString(R.string.searching),
+                            Snackbar.LENGTH_INDEFINITE
+                        )
                     snackBar?.show()
                 }
                 resource.state == StatefulResource.State.SUCCESS -> {
                     if (resource.hasData()) {
                         val detailsIntent = Intent(this, DetailsActivity::class.java)
-                        detailsIntent.putExtra(BundleKey.ARTIST_NAME.name, resource.getData()!!.name)
+                        detailsIntent.putExtra(
+                            BundleKey.ARTIST_NAME.name,
+                            resource.getData()!!.name
+                        )
                         startActivity(detailsIntent)
                     } else {
                         snackBar = Snackbar.make(
                             view_pager_wrapper,
-                            getString(resource.message ?: R.string.artist_not_found), Snackbar.LENGTH_LONG
+                            getString(resource.message ?: R.string.artist_not_found),
+                            Snackbar.LENGTH_LONG
                         )
                             .setAction(R.string.ok) { snackBar?.dismiss() }
                     }
@@ -146,7 +153,8 @@ class MainActivity : BaseActivity() {
                 resource.state == StatefulResource.State.ERROR_NETWORK -> {
                     snackBar = Snackbar.make(
                         view_pager_wrapper,
-                        getString(resource.message ?: R.string.no_network_connection), Snackbar.LENGTH_LONG
+                        getString(resource.message ?: R.string.no_network_connection),
+                        Snackbar.LENGTH_LONG
                     )
                         .setAction(R.string.retry) {
                             mainViewModel.retryLastArtistSearch()

@@ -119,6 +119,7 @@ dependencies {
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
     debugImplementation "com.facebook.soloader:soloader:$soLoaderVersion"
     releaseImplementation "com.facebook.flipper:flipper-noop:$flipperVersion"
+    debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
 
     //material serach bar
     implementation "com.github.mancj:MaterialSearchBar:$materialSearchbarVersion"

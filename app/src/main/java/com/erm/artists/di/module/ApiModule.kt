@@ -4,6 +4,7 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterF
 import com.erm.artists.BuildConfig
 import com.erm.artists.data.api.BandsInTownApi
 import com.erm.artists.data.api.interceptor.BandsInTownInterceptor
+import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -37,6 +38,8 @@ class ApiModule {
         return OkHttpClient.Builder()
             .addInterceptor(bandsInTownInterceptor)
             .addInterceptor(httpLoggingInterceptor)
+                //TODO pass network plugin instance into flipper interceptor
+            .addInterceptor(FlipperOkhttpInterceptor())
             .build()
     }
 

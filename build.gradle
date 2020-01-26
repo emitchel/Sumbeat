@@ -33,7 +33,7 @@ ext {
     gsonVersion = '2.8.6'
     materialSearchbarVersion = '0.8.1'
     flipperVersion = '0.30.2'
-    soLoaderVersion = '0.5.1'
+    soLoaderVersion = '0.8.0'
     testCoreVersion = '1.2.0'
     junitVersion = '1.1.1'
     runnerVersion = '1.2.0'

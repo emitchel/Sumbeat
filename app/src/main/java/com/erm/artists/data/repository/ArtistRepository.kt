@@ -6,11 +6,12 @@ import com.erm.artists.data.model.entity.ArtistEvent
 import com.erm.artists.data.model.relation.ArtistWithEvents
 import com.erm.artists.data.model.relation.EventWithArtist
 import com.erm.artists.data.repository.base.Resource
-import kotlinx.coroutines.Deferred
+import com.erm.artists.ui.base.Result
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 
 interface ArtistRepository {
-    suspend fun getArtistByName(name: String): Resource<Artist?>
+    suspend fun getArtistByName(name: String): Flow<Result<Artist?>>
 
     suspend fun getLastArtistsSearched(numberOfArtists: Int = 10): Resource<List<Artist>?>
 

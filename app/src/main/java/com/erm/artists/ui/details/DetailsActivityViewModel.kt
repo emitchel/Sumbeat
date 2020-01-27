@@ -8,7 +8,6 @@ import com.erm.artists.ui.base.StatefulResource
 
 interface DetailsActivityViewModel {
     var artistName: MutableLiveData<String?>
-    val artistDetails: LiveData<StatefulResource<Artist?>>
     val artistImage: LiveData<String?>
     val artistFavorited: LiveData<Boolean>
     val artistWebpage: LiveData<String>

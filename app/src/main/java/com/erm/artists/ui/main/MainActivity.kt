@@ -10,6 +10,7 @@ import com.erm.artists.R
 import com.erm.artists.constants.BundleKey
 import com.erm.artists.data.model.entity.Artist
 import com.erm.artists.ui.base.BaseActivity
+import com.erm.artists.ui.base.Result
 import com.erm.artists.ui.base.StatefulResource
 import com.erm.artists.ui.details.DetailsActivity
 import com.google.android.material.snackbar.Snackbar
@@ -118,12 +119,12 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setupObservers() {
-        mainViewModel.artistSearch.observe(this, Observer<StatefulResource<Artist?>> { resource ->
+        mainViewModel.artistSearch.observe(this, Observer<Result<Artist?>> { result ->
 
             snackBar?.dismiss()
 
-            when {
-                resource.state == StatefulResource.State.LOADING -> {
+            when (result) {
+                is Result.Loading -> {
                     snackBar =
                         Snackbar.make(
                             view_pager_wrapper,
@@ -132,40 +133,29 @@ class MainActivity : BaseActivity() {
                         )
                     snackBar?.show()
                 }
-                resource.state == StatefulResource.State.SUCCESS -> {
-                    if (resource.hasData()) {
+                is Result.Success -> {
+                    if (result.data != null) {
                         val detailsIntent = Intent(this, DetailsActivity::class.java)
                         detailsIntent.putExtra(
                             BundleKey.ARTIST_NAME.name,
-                            resource.getData()!!.name
+                            result.data.name
                         )
                         startActivity(detailsIntent)
                     } else {
                         snackBar = Snackbar.make(
                             view_pager_wrapper,
-                            getString(resource.message ?: R.string.artist_not_found),
+                            getString(result.message ?: R.string.artist_not_found),
                             Snackbar.LENGTH_LONG
                         )
                             .setAction(R.string.ok) { snackBar?.dismiss() }
                     }
                     snackBar?.show()
                 }
-                resource.state == StatefulResource.State.ERROR_NETWORK -> {
+                is Result.NetworkError, is Result.ApiError -> {
                     snackBar = Snackbar.make(
                         view_pager_wrapper,
-                        getString(resource.message ?: R.string.no_network_connection),
+                        getString(result.message ?: R.string.generic_error),
                         Snackbar.LENGTH_LONG
-                    )
-                        .setAction(R.string.retry) {
-                            mainViewModel.retryLastArtistSearch()
-                            snackBar?.dismiss()
-                        }
-                    snackBar?.show()
-                }
-                resource.state == StatefulResource.State.ERROR_API -> {
-                    snackBar = Snackbar.make(
-                        view_pager_wrapper,
-                        getString(resource.message ?: R.string.service_error), Snackbar.LENGTH_LONG
                     )
                         .setAction(R.string.retry) {
                             mainViewModel.retryLastArtistSearch()

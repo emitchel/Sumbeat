@@ -6,9 +6,12 @@ import com.erm.artists.data.model.entity.base.ReflectsApiResponse
 import com.erm.artists.data.repository.base.Resource
 import com.erm.artists.data.repository.helpers.DataFetchHelper.DataFetchStyle
 import com.erm.artists.data.repository.helpers.DataFetchHelper.DataFetchStyle.*
+import com.erm.artists.data.repository.helpers.DataFetchHelper.DataFetchStyle.Result.*
+import com.erm.artists.ui.base.Result
 import com.erm.artists.util.RepositoryUtil
 import com.erm.artists.util.onMainThread
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.flow
 import retrofit2.Response
 import timber.log.Timber
 
@@ -31,7 +34,7 @@ import timber.log.Timber
  */
 abstract class DataFetchHelper<T>(
     val tag: String,
-    private val dataFetchStyle: DataFetchStyle? = DataFetchStyle.LOCAL_FIRST_NETWORK_REFRESH_ALWAYS,
+    private val dataFetchStyle: DataFetchStyle? = LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND,
     private val sharedPreferences: SharedPreferences? = null,
     private val cacheKey: String? = null,
     private val cacheDescriptor: String? = "",
@@ -49,14 +52,20 @@ abstract class DataFetchHelper<T>(
         /**
          * DEFAULT
          *
-         * Fetch from local storage,
-         * but always follow up with network call to store fresh data
+         * Fetch from local storage, always follow up with network call to store fresh data
+         *
+         * If local data is empty, it will wait for the network call
          *
          * Pros: Depends on local data, always refreshes in the background
-         * Cons: Maximizing network calls, network call must finish before local data is returned
-         * TODO return local data immediately, asynchronously refresh
+         * Cons: Maximizing network calls
          */
-        LOCAL_FIRST_NETWORK_REFRESH_ALWAYS,
+        LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND,
+
+        /**
+         * Similar to [LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND] except the refreshed call is emitted
+         * to the consumer, regardless if its fresh or not
+         */
+        LOCAL_FIRST_NETWORK_REFRESH_EMISSION,
 
         /**
          * Fetch from local storage until it's stale (e.g. cache expired) then pull from network to restore
@@ -122,7 +131,7 @@ abstract class DataFetchHelper<T>(
 
             /**
              * Fetched from local
-             * [DataFetchStyle.LOCAL_FIRST_NETWORK_REFRESH_ALWAYS]
+             * [DataFetchStyle.LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND]
              */
             LOCAL_DATA_FIRST,
 
@@ -187,7 +196,7 @@ abstract class DataFetchHelper<T>(
         cacheLengthSeconds: Long
     ) : DataFetchHelper<S>(
         tag,
-        LOCAL_FIRST_NETWORK_REFRESH_ALWAYS,
+        LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND,
         sharedPreferences,
         cacheKey,
         cacheDescriptor,
@@ -259,7 +268,7 @@ abstract class DataFetchHelper<T>(
     open suspend fun convertApiResponseToData(response: Response<out Any?>): T {
         try {
             return response.body() as T
-        } catch (e: Exception) {
+        } catch (e: ClassCastException) {
             throw ClassCastException(
                 "$e - Cannot convert ${response.body()!!::class.java.simpleName} to Data Fetch type, " +
                         "override this method to provide conversion."
@@ -302,12 +311,21 @@ abstract class DataFetchHelper<T>(
         async { fetchDataByStyle(sharedPreferences, cacheKey) }
     }
 
+    fun fetchDataIOFlow() = flow {
+        TODO("handle error")
+        emit(Result.Loading)
+        emit(withContext(Dispatchers.IO) {
+            fetchDataByStyle(sharedPreferences, cacheKey, this)
+        }.toResult())
+    }
+
     private suspend fun fetchDataByStyle(
         sharedPreferences: SharedPreferences?,
-        cacheKey: String?
+        cacheKey: String?,
+        coroutineScope: CoroutineScope? = null
     ): Resource<T> {
         val resource = Resource<T>()
-        resource.dataFetchStyleResult = Result.NO_FETCH
+        resource.dataFetchStyleResult = NO_FETCH
         resource.dataFetchStyle = dataFetchStyle ?: NETWORK_FIRST_LOCAL_FAILOVER
 
         if (onMainThread()) {
@@ -321,61 +339,78 @@ abstract class DataFetchHelper<T>(
                     log("Unable to get data from network, failing over to local")
                     resource.data = getDataFromLocal()
                     resource.fresh = false
-                    resource.dataFetchStyleResult = Result.LOCAL_DATA_NETWORK_FAIL
+                    resource.dataFetchStyleResult = LOCAL_DATA_NETWORK_FAIL
                 } else {
                     resource.fresh = true
-                    resource.dataFetchStyleResult = Result.NETWORK_DATA_FIRST
+                    resource.dataFetchStyleResult = NETWORK_DATA_FIRST
                 }
             }
             NETWORK_ONLY -> {
                 resource.data = refreshDataFromNetwork(resource, NETWORK_ONLY)
                 resource.fresh = true
-                resource.dataFetchStyleResult = Result.NETWORK_DATA_ONLY
+                resource.dataFetchStyleResult = NETWORK_DATA_ONLY
             }
             LOCAL_ONLY -> {
                 resource.data = getDataFromLocal()
                 resource.fresh = true
-                resource.dataFetchStyleResult = Result.LOCAL_DATA_ONLY
+                resource.dataFetchStyleResult = LOCAL_DATA_ONLY
             }
-            LOCAL_FIRST_NETWORK_REFRESH_ALWAYS -> {
-                resource.data = getDataFromLocal()
-                //TODO:
-                //always refreshing following it
+            LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND -> {
+
+                val networkResource = Resource<T>()
                 val dataFromNetwork =
-                    refreshDataFromNetwork(resource, LOCAL_FIRST_NETWORK_REFRESH_ALWAYS)
-                if (resource.data == null) {
-                    log("Local data was empty, so returning data from network first")
-                    resource.data = dataFromNetwork
-                    resource.dataFetchStyleResult = Result.NETWORK_DATA_LOCAL_MISSING
-                } else {
+                    coroutineScope?.async {
+                        refreshDataFromNetwork(
+                            networkResource,
+                            LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND
+                        )
+                    }
+
+                resource.data = getDataFromLocal()
+                if (resource.data != null) {
                     log("Returning local data first, refreshing in background")
-                    resource.dataFetchStyleResult = Result.LOCAL_DATA_FIRST
+                    resource.dataFetchStyleResult = LOCAL_DATA_FIRST
+                } else {
+                    log("Local data was empty, returning data from network first")
+                    resource.copyFrom(networkResource)
+                    resource.data = dataFromNetwork?.await()
+                    resource.dataFetchStyleResult = NETWORK_DATA_LOCAL_MISSING
                 }
                 resource.fresh = true
+            }
+            LOCAL_FIRST_NETWORK_REFRESH_EMISSION -> {
+                TODO()
             }
             LOCAL_FIRST_UNTIL_STALE -> {
                 if (cacheKey == null || sharedPreferences == null) {
                     throw IllegalArgumentException("Cache key and shared preferences required for caching capabilities")
                 }
-                if (RepositoryUtil.isCacheStale(sharedPreferences, cacheKey, cacheDescriptor, cacheLengthSeconds)) {
+                if (RepositoryUtil.isCacheStale(
+                        sharedPreferences,
+                        cacheKey,
+                        cacheDescriptor,
+                        cacheLengthSeconds
+                    )
+                ) {
                     log("Cache is stale")
                     resource.data = refreshDataFromNetwork(resource, LOCAL_FIRST_UNTIL_STALE)
-                    if (resource.data == null) {
-                        log("Unsuccessfully stored fresh data from network, getting stale data from local")
-                        resource.data = getDataFromLocal()
-                        resource.fresh = false
-                        resource.dataFetchStyleResult = Result.LOCAL_DATA_NETWORK_FAIL
-                    } else {
+                    if (resource.response?.isSuccessful == true) {
                         log("Successfully stored fresh data from network")
                         resource.fresh = true
-                        resource.dataFetchStyleResult = Result.NETWORK_DATA_LOCAL_STALE
+                        resource.dataFetchStyleResult = NETWORK_DATA_LOCAL_STALE
                         RepositoryUtil.resetCache(sharedPreferences, cacheKey, cacheDescriptor)
+                    } else {
+                        log("Unsuccessfully stored fresh data from network, getting stale data from local")
+                        resource.reset(dataFetchStyle)
+                        resource.data = getDataFromLocal()
+                        resource.fresh = false
+                        resource.dataFetchStyleResult = LOCAL_DATA_NETWORK_FAIL
                     }
                 } else {
                     log("Cache isn't stale")
                     resource.data = getDataFromLocal()
                     resource.fresh = true
-                    resource.dataFetchStyleResult = Result.LOCAL_DATA_FRESH
+                    resource.dataFetchStyleResult = LOCAL_DATA_FRESH
                 }
             }
         }
@@ -391,11 +426,14 @@ abstract class DataFetchHelper<T>(
      * @param dataFetchStyle the data fetch style that this resource corresponds to
      * @return T? - Newly stored data
      */
-    private suspend fun refreshDataFromNetwork(resource: Resource<T>, dataFetchStyle: DataFetchStyle): T? {
+    private suspend fun refreshDataFromNetwork(
+        resource: Resource<T>,
+        dataFetchStyle: DataFetchStyle
+    ): T? {
         //Some styles depend on data getting stored locally, gently throw a log error to let them know
         val forceStoreLocally = arrayListOf(
             NETWORK_FIRST_LOCAL_FAILOVER,
-            LOCAL_FIRST_NETWORK_REFRESH_ALWAYS,
+            LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND,
             LOCAL_FIRST_UNTIL_STALE
         ).contains(dataFetchStyle)
 
@@ -408,7 +446,7 @@ abstract class DataFetchHelper<T>(
             log("Got data from network")
             if (resource.response?.body() == null) {
                 resource.errorMessage =
-                        "Response body was null! Verify correct response object was used for service call"
+                    "Response body was null! Verify correct response object was used for service call"
                 Timber.e(resource.errorMessage)
                 //if body was null, no point in attempting to convert it or store it
                 return null
@@ -420,7 +458,8 @@ abstract class DataFetchHelper<T>(
         } catch (e: Exception) {
             //IOExceptions, conversion exceptions, or local storage exception
             resource.throwable = e
-            resource.errorMessage = "Unable to refresh data for request type $tag, due to exception $e"
+            resource.errorMessage =
+                "Unable to refresh data for request type $tag, due to exception $e"
             Timber.e(resource.errorMessage)
         } finally {
             if (forceStoreLocally && !storedFreshData) {

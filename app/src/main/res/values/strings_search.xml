@@ -9,6 +9,7 @@
     <string name="no_network_connection">No network connection!</string>
     <string name="retry">Retry</string>
     <string name="service_error">There was problem with the service, please try again later</string>
+    <string name="generic_error">Oops! There was an error</string>
     <string name="artist_not_found">Hmm, can\'t find anything</string>
     <string name="ok">Ok</string>
 </resources>

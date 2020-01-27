@@ -1,6 +1,7 @@
 package com.erm.artists.data.repository.base
 
 import com.erm.artists.data.repository.helpers.DataFetchHelper
+import com.erm.artists.ui.base.Result
 import retrofit2.Response
 import java.io.IOException
 
@@ -52,7 +53,7 @@ class Resource<T> {
 
     /**
      * If a network error happened during the fetch
-     * Doesn't necessarily mean "fresh" data wasn't received, see [DataFetchHelper.DataFetchStyle.LOCAL_FIRST_NETWORK_REFRESH_ALWAYS]
+     * Doesn't necessarily mean "fresh" data wasn't received, see [DataFetchHelper.DataFetchStyle.LOCAL_FIRST_NETWORK_REFRESH_BACKGROUND]
      */
     fun isNetworkIssue(): Boolean = throwable is IOException
 
@@ -62,6 +63,14 @@ class Resource<T> {
      * e.g. 404 isNotFound(), 5XX Service Error, etc.
      */
     fun isApiIssue(): Boolean = !(response?.isSuccessful ?: true)
+
+    fun reset(dataFetchStyle: DataFetchHelper.DataFetchStyle) {
+        data = null
+        response = null
+        throwable = null
+        this.dataFetchStyle = dataFetchStyle
+        dataFetchStyleResult = DataFetchHelper.DataFetchStyle.Result.NO_FETCH
+    }
 
     /**
      * Copy the resource to a new data type (or the same)
@@ -78,5 +87,34 @@ class Resource<T> {
             fresh = this@Resource.fresh
             errorMessage = this@Resource.errorMessage
         }
+    }
+
+    fun copyFrom(resource: Resource<T>) {
+        this.data = resource.data
+        this.response = resource.response
+        this.throwable = resource.throwable
+        this.dataFetchStyle = resource.dataFetchStyle
+        this.dataFetchStyleResult = resource.dataFetchStyleResult
+        this.fresh = resource.fresh
+        this.errorMessage = resource.errorMessage
+    }
+
+    fun toResult() = when {
+        response?.isSuccessful == true -> Result.Success(
+            data,
+            response,
+            fresh,
+            dataFetchStyle,
+            dataFetchStyleResult
+        )
+        isApiIssue() -> Result.ApiError(throwable, errorMessage)
+        isNetworkIssue() -> Result.NetworkError(throwable, errorMessage)
+        else -> Result.Success(
+            data,
+            response,
+            fresh,
+            dataFetchStyle,
+            dataFetchStyleResult
+        )
     }
 }

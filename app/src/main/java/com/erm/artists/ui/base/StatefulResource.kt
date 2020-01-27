@@ -6,7 +6,9 @@ import com.erm.artists.data.repository.base.Resource
 /**
  * Wrapper class for easily emitting state information surrounding a resource
  * e.g. LiveData<StatefulResource<Artist>>
+ *
  */
+@Deprecated("Use [com.erm.artists.ui.base.Result] instead")
 class StatefulResource<T> {
     /**
      * Various states the resource could be in

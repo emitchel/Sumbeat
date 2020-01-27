@@ -7,10 +7,7 @@ import android.view.MenuItem
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.details_activity.*
 import com.erm.artists.R
 import com.erm.artists.constants.BundleKey
 import com.erm.artists.data.model.relation.EventWithArtist
@@ -21,6 +18,8 @@ import com.erm.artists.extensions.visible
 import com.erm.artists.ui.base.BaseActivity
 import com.erm.artists.ui.events.EventsAdapter
 import com.erm.artists.util.IntentUtil
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.details_activity.*
 
 
 /**
@@ -69,7 +68,9 @@ class DetailsActivity : BaseActivity(), EventsAdapter.ArtistEventsListener {
     override fun onMenuOpened(featureId: Int, menu: Menu?): Boolean {
         menu?.findItem(R.id.action_menu_favorite_or_unfavorite)?.let {
             it.title =
-                    if (viewModel.artistFavorited.value!!) getString(R.string.unfavorite) else getString(R.string.favorite)
+                if (viewModel.artistFavorited.value!!) getString(R.string.unfavorite) else getString(
+                    R.string.favorite
+                )
         }
 
         return true
@@ -101,11 +102,7 @@ class DetailsActivity : BaseActivity(), EventsAdapter.ArtistEventsListener {
     private fun setupObservers() {
 
         viewModel.artistFavorited.observe(this, Observer {
-            if (it) {
-                fab_favorite.setImageResource(R.drawable.ic_favorite_light)
-            } else {
-                fab_favorite.setImageResource(R.drawable.ic_non_favorite_light)
-            }
+            fab_favorite.setImageResource(if (it) R.drawable.ic_favorite_light else R.drawable.ic_non_favorite_light)
         })
 
         viewModel.artistImage.observe(this, Observer {

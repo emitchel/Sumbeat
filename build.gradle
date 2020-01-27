@@ -7,38 +7,55 @@ ext {
     buildToolsVersion = '26.0.2'
 
     // App dependencies
+    gradleVersion = '3.2.1'
     supportLibraryVersion = '28.0.0'
     contraintLayoutVersion = '1.1.3'
-    roomVersion = "2.1.0-alpha03"
-    daggerVersion = "2.19"
-    okhttpVersion = "3.7.0"
-    retrofitVersion = "2.5.0"
+    roomVersion = '2.2.3'
+    daggerVersion = '2.25.4'
+    okhttpVersion = '4.3.1'
+    retrofitVersion = '2.7.1'
     architectureComponentsVersion = "2.0.0"
-    lifecycleVersion = "2.1.0-alpha04"
+    lifecycleVersion = '2.2.0'
     testRuleVersion = "1.1.0"
-    robolectricVersion = '4.1'
-    mockitoVersion = '2.+'
+    robolectricVersion = '4.3.1'
+    mockitoVersion = '3.2.4'
     mockitoKotlinVersion = '1.5.0'
-    junitVersion = '4.12'
-    runnerVersion = '1.0.2'
     espressoVersion = '3.1.0'
-    coroutinesVersion = '1.2.0-alpha-2'
+    coroutinesVersion = '1.3.3'
+    timberVersion = '4.7.1'
+    appcompatVersion = '1.1.0'
+    constraintlayoutVersion = '2.0.0-beta4'
+    recyclerviewVersion = '1.1.0'
+    materialVersion = '1.2.0-alpha04'
+    jwThreetenABP = '1.2.2'
+    orgThreetenbp = '1.4.1'
+    picassoVersion = '2.71828'
+    gsonVersion = '2.8.6'
+    materialSearchbarVersion = '0.8.1'
+    flipperVersion = '0.30.2'
+    soLoaderVersion = '0.8.0'
+    testCoreVersion = '1.2.0'
+    junitVersion = '1.1.1'
+    runnerVersion = '1.2.0'
+    espressoCoreVersion = '3.2.0'
+    coreKtxVersion = '1.1.0'
+    fragmentKtxVersion = '1.2.0'
 }
 buildscript {
-    ext.kotlinVersion = '1.3.10'
-    ext.gradleVersion = '3.2.1'
+    ext.kotlinVersion = '1.3.61'
+    ext.gradleVersion = '3.5.3'
     repositories {
         google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.2'
+        classpath "com.android.tools.build:gradle:$gradleVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 
         //without this, dagger version above 2.16 breaks with androidx (jetifier) (as of 11/27/2018)
         //https://github.com/google/dagger/issues/1245
         //https://issuetracker.google.com/issues/115738511
-        classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta02'
+        classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta08'
     }
 }
 

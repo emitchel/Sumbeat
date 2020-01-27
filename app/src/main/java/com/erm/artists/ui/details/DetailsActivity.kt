@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
+import androidx.activity.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,7 +29,7 @@ import com.erm.artists.util.IntentUtil
  * @property viewModel DetailsActivityViewModel
  */
 class DetailsActivity : BaseActivity(), EventsAdapter.ArtistEventsListener {
-    private lateinit var viewModel: DetailsActivityViewModel
+    private val viewModel by viewModels<DetailsActivityViewModelImpl> { factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +99,6 @@ class DetailsActivity : BaseActivity(), EventsAdapter.ArtistEventsListener {
     }
 
     private fun setupObservers() {
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(DetailsActivityViewModelImpl::class.java)
 
         viewModel.artistFavorited.observe(this, Observer {
             if (it) {

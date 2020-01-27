@@ -41,7 +41,7 @@ class DetailsActivityViewModelImpl
     private suspend fun fetchArtistDetails(artistName: String) {
         mutableArtistDetails.value = StatefulResource.loading()
 
-        val artistDetailsResource = bandsInTownArtistRepository.getArtistByName(artistName).await()
+        val artistDetailsResource = bandsInTownArtistRepository.getArtistByName(artistName)
         when {
             artistDetailsResource.hasData() -> {
                 //return the value
@@ -78,10 +78,9 @@ class DetailsActivityViewModelImpl
         mutableArtistEventDetails.value = StatefulResource.loading()
 
         artist?.let {
-            val artistEventDetails = bandsInTownArtistRepository.getArtistEvents(artist.name!!).await()
+            val artistEventDetails = bandsInTownArtistRepository.getArtistEvents(artist.name!!)
 
             when {
-                //The repository doesn't fdas
                 artistEventDetails.hasData() -> {
                     mutableArtistEventDetails.value = StatefulResource.success(
                         artistEventDetails.copy(

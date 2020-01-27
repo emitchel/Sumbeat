@@ -27,7 +27,7 @@ class BandsInTownArtistRepository @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) : BaseRepository(), ArtistRepository {
 
-    override suspend fun getArtistByName(name: String): Deferred<Resource<Artist?>>  {
+    override suspend fun getArtistByName(name: String): Resource<Artist?>  {
 
         val dataFetchHelper = object : DataFetchHelper.LocalFirstUntilStale<Artist?>(
             "Artist",
@@ -42,7 +42,7 @@ class BandsInTownArtistRepository @Inject constructor(
             }
 
             override suspend fun getDataFromNetwork(): Response<out Any?> {
-                return bandsInTownApi.findArtistByName(name).await()
+                return bandsInTownApi.findArtistByName(name)
             }
 
             override suspend fun convertApiResponseToData(response: Response<out Any?>): Artist {
@@ -67,7 +67,7 @@ class BandsInTownArtistRepository @Inject constructor(
             }
         }
 
-        return dataFetchHelper.fetchDataIOAsync()
+        return dataFetchHelper.fetchDataIOAsync().await()
     }
 
     override suspend fun updateArtistSearchTime(artist: Artist) = withContext(ioDispatcher) {
@@ -84,7 +84,7 @@ class BandsInTownArtistRepository @Inject constructor(
         }
     }
 
-    override suspend fun getLastArtistsSearched(numberOfArtists: Int): Deferred<Resource<List<Artist>?>> {
+    override suspend fun getLastArtistsSearched(numberOfArtists: Int): Resource<List<Artist>?> {
         val dataFetchHelper = object : DataFetchHelper.LocalOnly<List<Artist>?>(
             "LastArtistsSearched"
         ) {
@@ -92,13 +92,13 @@ class BandsInTownArtistRepository @Inject constructor(
                 return bandsInTownDatabase.artistDao().findLastArtistsSearched(numberOfArtists)
             }
         }
-        return dataFetchHelper.fetchDataIOAsync()
+        return dataFetchHelper.fetchDataIOAsync().await()
     }
 
     override suspend fun getArtistEvents(
         artistName: String,
         eventDate: EventDate?
-    ): Deferred<Resource<List<ArtistEvent>?>> {
+    ): Resource<List<ArtistEvent>?> {
         //always grabbing latest event updates
         val dataFetchHelper = object : DataFetchHelper.NetworkFirstLocalFailover<List<ArtistEvent>?>(
             "ArtistEvents"
@@ -116,16 +116,13 @@ class BandsInTownArtistRepository @Inject constructor(
             }
 
             override suspend fun getDataFromNetwork(): Response<out Any?> {
-                return bandsInTownApi.findArtistEvents(artistName, eventDate ?: EventDate()).await()
+                return bandsInTownApi.findArtistEvents(artistName, eventDate ?: EventDate())
             }
 
             override suspend fun convertApiResponseToData(response: Response<out Any?>): List<ArtistEvent> {
-                val listOfArtistEvent = arrayListOf<ArtistEvent>()
-                (response.body() as List<ArtistEventResponse>).forEach {
-                    listOfArtistEvent.add(ArtistEvent().reflectFrom(it))
+                return (response.body() as List<ArtistEventResponse>).map {
+                    ArtistEvent().reflectFrom(it)
                 }
-
-                return listOfArtistEvent
             }
 
             override suspend fun storeFreshDataToLocal(data: List<ArtistEvent>?): Boolean {
@@ -137,10 +134,10 @@ class BandsInTownArtistRepository @Inject constructor(
                 }
             }
         }
-        return dataFetchHelper.fetchDataIOAsync()
+        return dataFetchHelper.fetchDataIOAsync().await()
     }
 
-    override suspend fun getFavoriteArtistsWithEvents(): Deferred<Resource<List<ArtistWithEvents>?>> {
+    override suspend fun getFavoriteArtistsWithEvents(): Resource<List<ArtistWithEvents>?> {
         val dataFetchHelper = object : DataFetchHelper.LocalOnly<List<ArtistWithEvents>?>(
             "FavoriteArtistWithEvents"
         ) {
@@ -148,10 +145,10 @@ class BandsInTownArtistRepository @Inject constructor(
                 return bandsInTownDatabase.artistDao().getFavoriteArtistsWithEvents()
             }
         }
-        return dataFetchHelper.fetchDataIOAsync()
+        return dataFetchHelper.fetchDataIOAsync().await()
     }
 
-    override suspend fun getFavoriteArtists(): Deferred<Resource<List<Artist>?>> {
+    override suspend fun getFavoriteArtists(): Resource<List<Artist>?> {
         val dataFetchHelper = object : DataFetchHelper.LocalOnly<List<Artist>?>(
             "FavoriteArtists"
         ) {
@@ -159,7 +156,7 @@ class BandsInTownArtistRepository @Inject constructor(
                 return bandsInTownDatabase.artistDao().getFavoriteArtists()
             }
         }
-        return dataFetchHelper.fetchDataIOAsync()
+        return dataFetchHelper.fetchDataIOAsync().await()
     }
 
     override suspend fun addFavoriteArtist(artistId: Long) = withContext(ioDispatcher) {
@@ -172,7 +169,7 @@ class BandsInTownArtistRepository @Inject constructor(
         }
     }
 
-    override suspend fun getFavoriteEventsWithArtist(): Deferred<Resource<List<EventWithArtist>?>> {
+    override suspend fun getFavoriteEventsWithArtist(): Resource<List<EventWithArtist>?> {
         val dataFetchHelper = object : DataFetchHelper.LocalOnly<List<EventWithArtist>?>(
             "FavoriteArtistEvents"
         ) {
@@ -186,7 +183,7 @@ class BandsInTownArtistRepository @Inject constructor(
                 }
             }
         }
-        return dataFetchHelper.fetchDataIOAsync()
+        return dataFetchHelper.fetchDataIOAsync().await()
     }
 
     override suspend fun addFavoriteArtistEvent(artistEventId: Long) = withContext(ioDispatcher) {

@@ -11,6 +11,7 @@ import com.erm.artists.ui.main.MainActivityViewModelImpl
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
+import javax.inject.Singleton
 
 
 /**
@@ -20,6 +21,7 @@ import dagger.multibindings.IntoMap
 abstract class ViewModelModule {
 
     @Binds
+    @Singleton
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
 
     @Binds

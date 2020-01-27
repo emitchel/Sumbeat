@@ -1,18 +1,18 @@
 package com.erm.artists.data.repository
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
 import com.erm.artists.data.model.EventDate
 import com.erm.artists.data.model.entity.Artist
 import com.erm.artists.data.model.entity.ArtistEvent
 import com.erm.artists.data.model.relation.ArtistWithEvents
 import com.erm.artists.data.model.relation.EventWithArtist
 import com.erm.artists.data.repository.base.Resource
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
 
 interface ArtistRepository {
-    suspend fun getArtistByName(name: String): Deferred<Resource<Artist?>>
+    suspend fun getArtistByName(name: String): Resource<Artist?>
 
-    suspend fun getLastArtistsSearched(numberOfArtists: Int = 10): Deferred<Resource<List<Artist>?>>
+    suspend fun getLastArtistsSearched(numberOfArtists: Int = 10): Resource<List<Artist>?>
 
     suspend fun updateArtistSearchTime(artist: Artist): Job
 
@@ -21,19 +21,19 @@ interface ArtistRepository {
     suspend fun getArtistEvents(
         artistName: String,
         eventDate: EventDate? = EventDate.upcoming()
-    ): Deferred<Resource<List<ArtistEvent>?>>
+    ): Resource<List<ArtistEvent>?>
 
     /**
      * Returning favorite artists with corresponding events (events not guaranteed unless queried before)
      * Mostly used as an example of a relation query
      */
-    suspend fun getFavoriteArtistsWithEvents(): Deferred<Resource<List<ArtistWithEvents>?>>
+    suspend fun getFavoriteArtistsWithEvents(): Resource<List<ArtistWithEvents>?>
 
-    suspend fun getFavoriteArtists():Deferred<Resource<List<Artist>?>>
+    suspend fun getFavoriteArtists(): Resource<List<Artist>?>
     suspend fun addFavoriteArtist(artistId: Long): Job
     suspend fun deleteFavoriteArtist(artistId: Long): Job
 
-    suspend fun getFavoriteEventsWithArtist(): Deferred<Resource<List<EventWithArtist>?>>
+    suspend fun getFavoriteEventsWithArtist(): Resource<List<EventWithArtist>?>
     suspend fun addFavoriteArtistEvent(artistEventId: Long): Job
     suspend fun deleteFavoriteArtistEvent(artistEventId: Long): Job
 }

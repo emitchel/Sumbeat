@@ -1,9 +1,10 @@
 package com.erm.artists.di.module
 
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.erm.artists.BuildConfig
 import com.erm.artists.data.api.BandsInTownApi
 import com.erm.artists.data.api.interceptor.BandsInTownInterceptor
+import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
+import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -30,13 +31,31 @@ class ApiModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpClient(bandsInTownInterceptor: BandsInTownInterceptor): OkHttpClient {
-        val httpLoggingInterceptor = HttpLoggingInterceptor()
-        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+    fun providesNetworkFlipperPlugin() = NetworkFlipperPlugin()
 
+    @Provides
+    @Singleton
+    fun providesFlipperOkHttpInterceptor(networkFlipper: NetworkFlipperPlugin): FlipperOkhttpInterceptor =
+        FlipperOkhttpInterceptor(networkFlipper)
+
+    @Provides
+    @Singleton
+    fun providesHttpLoggingInterceptor() = HttpLoggingInterceptor().apply {
+        level =
+            if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.NONE else HttpLoggingInterceptor.Level.BODY
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttpClient(
+        bandsInTownInterceptor: BandsInTownInterceptor,
+        flipperInterceptor: FlipperOkhttpInterceptor,
+        httpLoggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(bandsInTownInterceptor)
             .addInterceptor(httpLoggingInterceptor)
+            .addInterceptor(flipperInterceptor)
             .build()
     }
 
@@ -53,7 +72,6 @@ class ApiModule {
                 MoshiConverterFactory
                     .create(moshi)
             )
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
         return retrofit.build()
     }
 

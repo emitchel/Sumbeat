@@ -7,11 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.app.ActivityOptionsCompat
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.favorite_artists_fragment.*
 import com.erm.artists.R
 import com.erm.artists.constants.BundleKey
 import com.erm.artists.data.model.entity.Artist
@@ -21,6 +19,8 @@ import com.erm.artists.extensions.visible
 import com.erm.artists.ui.base.BaseFragment
 import com.erm.artists.ui.details.DetailsActivity
 import com.erm.artists.util.IntentUtil
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.favorite_artists_fragment.*
 
 class FavoriteArtistsFragment : BaseFragment(),
     ArtistsAdapter.ArtistListener {
@@ -31,7 +31,7 @@ class FavoriteArtistsFragment : BaseFragment(),
         }
     }
 
-    private lateinit var viewModel: FavoriteArtistsFragmentViewModel
+    private val viewModel: FavoriteArtistsFragmentViewModel by viewModels<FavoriteArtistsFragmentViewModelImpl> { factory }
     private var adapter: ArtistsAdapter? = null
 
     override fun onCreateView(
@@ -52,13 +52,12 @@ class FavoriteArtistsFragment : BaseFragment(),
     }
 
     private fun setupObservers() {
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(FavoriteArtistsFragmentViewModelImpl::class.java)
         viewModel.getFavoriteArtists().observe(this, Observer { artistsWithEvents ->
             if (artistsWithEvents.isSuccessful()) {
                 if (artistsWithEvents.hasData() && artistsWithEvents.getData()!!.isNotEmpty()) {
                     adapter?.updateItems(artistsWithEvents.getData()!!.toMutableList()) ?: run {
                         rv_favorite_artists.layoutManager =
-                                StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+                            StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
                         adapter = ArtistsAdapter(
                             artistsWithEvents.getData()!!.toMutableList(),
                             this@FavoriteArtistsFragment
@@ -77,7 +76,8 @@ class FavoriteArtistsFragment : BaseFragment(),
     override fun onArtistClicked(artist: Artist, imageView: ImageView) {
         val detailsIntent = Intent(activity, DetailsActivity::class.java)
         detailsIntent.putExtra(BundleKey.ARTIST_NAME.name, artist.name)
-        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity!!, imageView, "artistImage")
+        val options =
+            ActivityOptionsCompat.makeSceneTransitionAnimation(activity!!, imageView, "artistImage")
         activity?.startActivity(detailsIntent, options.toBundle())
     }
 
@@ -85,7 +85,11 @@ class FavoriteArtistsFragment : BaseFragment(),
         adapter?.removeItem(position)
         viewModel.unFavoriteArtist(artist)
         setEmptyListMessageVisibility()
-        Snackbar.make(wrapper, getString(R.string.removed_favorite, artist.name!!), Snackbar.LENGTH_LONG)
+        Snackbar.make(
+            wrapper,
+            getString(R.string.removed_favorite, artist.name!!),
+            Snackbar.LENGTH_LONG
+        )
             .setAction(R.string.undo) {
                 adapter?.addItem(artist.apply { favorite = true }, position)
                 viewModel.undoFavoriteArtistRemoval()

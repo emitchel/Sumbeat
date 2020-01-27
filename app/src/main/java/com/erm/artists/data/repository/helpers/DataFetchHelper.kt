@@ -312,7 +312,6 @@ abstract class DataFetchHelper<T>(
     }
 
     fun fetchDataIOFlow() = flow {
-        TODO("handle error")
         emit(Result.Loading)
         emit(withContext(Dispatchers.IO) {
             fetchDataByStyle(sharedPreferences, cacheKey, this)

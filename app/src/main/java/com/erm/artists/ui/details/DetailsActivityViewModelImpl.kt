@@ -55,6 +55,9 @@ class DetailsActivityViewModelImpl
                         TODO("Handle no data ")
                     }
                 }
+                is Result.Loading -> {
+                    //no op
+                }
                 else -> {
                     TODO("Handle error ")
                 }

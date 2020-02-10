@@ -9,6 +9,6 @@ An API key is provided, but it is recommended to use a developer's key. Once an 
 
 ## TODO
 - MVVM test suite
-- Single activity architecture using Android's Navigation Library
+- Single activity Navigation
 - Explore Motion Layout
 - WorkerManager

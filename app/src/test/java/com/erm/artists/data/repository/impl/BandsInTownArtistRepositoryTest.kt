@@ -12,7 +12,7 @@ import com.erm.artists.data.persistence.BandsInTownDatabase
 import com.erm.artists.data.repository.helpers.DataFetchHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -106,24 +106,24 @@ class BandsInTownArtistRepositoryTest : CoroutineScope {
         }
 
         //block the current thread while switching to io
-        runBlocking(Dispatchers.IO) {
+        runBlocking(IO) {
             bandsInTownDatabase.artistDao().insert(listOf(a1, a2, a3))
             bandsInTownDatabase.artistEventDao().insert(listOf(e1, e2, e3, e4))
         }
     }
 
-    private fun setupApi() {
+    private fun setupApi() = runBlocking(IO) {
         bandsInTownApi = Mockito.mock(BandsInTownApi::class.java)
         //stubbing api responses
-        Mockito.`when`(bandsInTownApi.findArtistByName(ARTIST_1)).thenReturn(async {
+        Mockito.`when`(bandsInTownApi.findArtistByName(ARTIST_1)).thenReturn(
             Response.success(ArtistResponse(id = "1", name = ARTIST_1))
-        })
-        Mockito.`when`(bandsInTownApi.findArtistByName(ARTIST_2)).thenReturn(async {
+        )
+        Mockito.`when`(bandsInTownApi.findArtistByName(ARTIST_2)).thenReturn(
             Response.success(ArtistResponse(id = "2", name = ARTIST_2))
-        })
-        Mockito.`when`(bandsInTownApi.findArtistByName(ARTIST_3)).thenReturn(async {
+        )
+        Mockito.`when`(bandsInTownApi.findArtistByName(ARTIST_3)).thenReturn(
             Response.success(ArtistResponse(id = "3", name = ARTIST_3))
-        })
+        )
     }
 
     @After
@@ -133,7 +133,7 @@ class BandsInTownArtistRepositoryTest : CoroutineScope {
 
     @Test
     fun `Get Fresh Artist From API`() = runBlocking {
-        val resource = bandsInTownArtistRepository.getArtistByName(ARTIST_1).await()
+        val resource = bandsInTownArtistRepository.getArtistByName(ARTIST_1)
         val data = resource.data!!
 
         //fetched the correct artist
@@ -152,10 +152,10 @@ class BandsInTownArtistRepositoryTest : CoroutineScope {
 
 
     @Test
-    fun `Get Cached Artist From Local Storage`() = runBlocking {
+    fun `Get Cached Artist From Local Storage`() = runBlocking(IO) {
         //fetching it once to store in local cache
-        bandsInTownArtistRepository.getArtistByName(ARTIST_1).await()
-        val resource = bandsInTownArtistRepository.getArtistByName(ARTIST_1).await()
+        bandsInTownArtistRepository.getArtistByName(ARTIST_1)
+        val resource = bandsInTownArtistRepository.getArtistByName(ARTIST_1)
         assert(resource.data != null)
 
         //fetched the correct artist
@@ -173,7 +173,7 @@ class BandsInTownArtistRepositoryTest : CoroutineScope {
         //reset cache (clear cache mechanism) so we know upsert worked as expected
         sharedPreferences.edit().clear().commit()
         //get resource again
-        val freshArtist = bandsInTownArtistRepository.getArtistByName(ARTIST_1).await().data!!
+        val freshArtist = bandsInTownArtistRepository.getArtistByName(ARTIST_1).data!!
         assert(freshArtist.favorite) {
             "Updating artist from network didn't keep favorite column"
         }
@@ -183,7 +183,8 @@ class BandsInTownArtistRepositoryTest : CoroutineScope {
     fun `Fetch Favorite Artists with Events`() = runBlocking {
         //add favorite
         bandsInTownArtistRepository.addFavoriteArtist(1)
-        val favoriteArtistsWithEvents = bandsInTownArtistRepository.getFavoriteArtistsWithEvents().await()
+        val favoriteArtistsWithEvents =
+            bandsInTownArtistRepository.getFavoriteArtistsWithEvents()
         //make sure all events are tied to the artist (probably unnecessary)
         assert(favoriteArtistsWithEvents.data?.all { artistWithEvent ->
             artistWithEvent.artistEvents.all { artistEvent ->

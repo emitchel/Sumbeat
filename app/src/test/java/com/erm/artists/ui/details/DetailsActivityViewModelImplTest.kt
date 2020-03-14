@@ -26,14 +26,14 @@ class DetailsActivityViewModelImplTest : CoroutineScope {
     fun setup() = runBlocking {
 
         bandsInTownArtistRepository = Mockito.mock(BandsInTownArtistRepository::class.java)
-        Mockito.`when`(bandsInTownArtistRepository.getArtistByName("FirstArtist")).thenReturn(async {
+        Mockito.`when`(bandsInTownArtistRepository.getArtistByName("FirstArtist")).thenReturn(
             Resource<Artist?>().apply {
                 data = Artist().apply {
                     id = 1
                     name = "FirstArtist"
                 }
             }
-        })
+        )
 
         detailsActivityViewModelImpl = DetailsActivityViewModelImpl(bandsInTownArtistRepository)
 

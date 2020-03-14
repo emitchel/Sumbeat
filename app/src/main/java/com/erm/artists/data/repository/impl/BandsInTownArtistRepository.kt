@@ -1,7 +1,6 @@
 package com.erm.artists.data.repository.impl
 
 import android.content.SharedPreferences
-import kotlinx.coroutines.*
 import com.erm.artists.constants.CacheKey
 import com.erm.artists.data.api.BandsInTownApi
 import com.erm.artists.data.model.EventDate
@@ -16,6 +15,10 @@ import com.erm.artists.data.repository.ArtistRepository
 import com.erm.artists.data.repository.base.BaseRepository
 import com.erm.artists.data.repository.base.Resource
 import com.erm.artists.data.repository.helpers.DataFetchHelper
+import com.erm.artists.util.RepositoryUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 import retrofit2.Response
 import java.util.concurrent.TimeUnit
@@ -27,16 +30,27 @@ class BandsInTownArtistRepository @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) : BaseRepository(), ArtistRepository {
 
-    override suspend fun getArtistByName(name: String): Resource<Artist?>  {
+    suspend fun getArtist(name: String): Artist? = withContext(Dispatchers.IO) {
+        if (RepositoryUtil.isCacheStale(sharedPreferences, "artist", name, TimeUnit.HOURS.toSeconds(1))) {
+            bandsInTownApi.findArtistByName(name).body()?.let {
+                bandsInTownDatabase.artistDao().upsert(Artist().reflectFrom(it))
+            }
+            RepositoryUtil.resetCache(sharedPreferences,"artist", name)
+        }
+
+        //Single source of truth
+        return@withContext bandsInTownDatabase.artistDao().findArtistByName(name)
+    }
+
+    override suspend fun getArtistByName(name: String): Resource<Artist?> {
 
         val dataFetchHelper = object : DataFetchHelper.LocalFirstUntilStale<Artist?>(
             "Artist",
             sharedPreferences,
             CacheKey.ARTIST.toString(),
             name,
-            TimeUnit.HOURS.toSeconds(24) //storing artist information for a day (doesn't change much)
+            TimeUnit.HOURS.toSeconds(24) //storing artist information for a day
         ) {
-
             override suspend fun getDataFromLocal(): Artist? {
                 return bandsInTownDatabase.artistDao().findArtistByName(name)
             }
@@ -100,40 +114,41 @@ class BandsInTownArtistRepository @Inject constructor(
         eventDate: EventDate?
     ): Resource<List<ArtistEvent>?> {
         //always grabbing latest event updates
-        val dataFetchHelper = object : DataFetchHelper.NetworkFirstLocalFailover<List<ArtistEvent>?>(
-            "ArtistEvents"
-        ) {
+        val dataFetchHelper =
+            object : DataFetchHelper.NetworkFirstLocalFailover<List<ArtistEvent>?>(
+                "ArtistEvents"
+            ) {
 
-            override suspend fun getDataFromLocal(): List<ArtistEvent>? {
-                //TODO we ignoring EventDate for now, use getEventsByArtistIdAndEventDate when it's implemented
-                //First try to get the artist from local
-                val artist = bandsInTownDatabase.artistDao().findArtistByName(artistName)
-                artist?.let {
-                    return bandsInTownDatabase.artistEventDao().getEventsByArtistId(it.id!!)
-                } ?: run {
-                    return null //the api doesn't return artist name with events, only artist ID, BUT it takes artist name for searching...
+                override suspend fun getDataFromLocal(): List<ArtistEvent>? {
+                    //TODO we ignoring EventDate for now, use getEventsByArtistIdAndEventDate when it's implemented
+                    //First try to get the artist from local
+                    val artist = bandsInTownDatabase.artistDao().findArtistByName(artistName)
+                    artist?.let {
+                        return bandsInTownDatabase.artistEventDao().getEventsByArtistId(it.id!!)
+                    } ?: run {
+                        return null //the api doesn't return artist name with events, only artist ID, BUT it takes artist name for searching...
+                    }
+                }
+
+                override suspend fun getDataFromNetwork(): Response<out Any?> {
+                    return bandsInTownApi.findArtistEvents(artistName, eventDate ?: EventDate())
+                }
+
+                override suspend fun convertApiResponseToData(response: Response<out Any?>): List<ArtistEvent> {
+                    return (response.body() as List<ArtistEventResponse>).map {
+                        ArtistEvent().reflectFrom(it)
+                    }
+                }
+
+                override suspend fun storeFreshDataToLocal(data: List<ArtistEvent>?): Boolean {
+                    data?.let {
+                        bandsInTownDatabase.artistEventDao().upsert(data)
+                        return true
+                    } ?: run {
+                        return false
+                    }
                 }
             }
-
-            override suspend fun getDataFromNetwork(): Response<out Any?> {
-                return bandsInTownApi.findArtistEvents(artistName, eventDate ?: EventDate())
-            }
-
-            override suspend fun convertApiResponseToData(response: Response<out Any?>): List<ArtistEvent> {
-                return (response.body() as List<ArtistEventResponse>).map {
-                    ArtistEvent().reflectFrom(it)
-                }
-            }
-
-            override suspend fun storeFreshDataToLocal(data: List<ArtistEvent>?): Boolean {
-                data?.let {
-                    bandsInTownDatabase.artistEventDao().upsert(data)
-                    return true
-                } ?: run {
-                    return false
-                }
-            }
-        }
         return dataFetchHelper.fetchDataIOAsync().await()
     }
 
@@ -177,7 +192,8 @@ class BandsInTownArtistRepository @Inject constructor(
                 val favoriteEvents = bandsInTownDatabase.artistEventDao().getFavoriteEvents()
                 return favoriteEvents?.map { favoriteEvent ->
                     EventWithArtist().apply {
-                        artist = bandsInTownDatabase.artistDao().findArtistById(favoriteEvent.artistId!!)
+                        artist =
+                            bandsInTownDatabase.artistDao().findArtistById(favoriteEvent.artistId!!)
                         artistEvent = favoriteEvent
                     }
                 }
@@ -192,9 +208,10 @@ class BandsInTownArtistRepository @Inject constructor(
         }
     }
 
-    override suspend fun deleteFavoriteArtistEvent(artistEventId: Long) = withContext(ioDispatcher) {
-        launch {
-            bandsInTownDatabase.artistEventDao().unfavoriteArtistEvent(artistEventId)
+    override suspend fun deleteFavoriteArtistEvent(artistEventId: Long) =
+        withContext(ioDispatcher) {
+            launch {
+                bandsInTownDatabase.artistEventDao().unfavoriteArtistEvent(artistEventId)
+            }
         }
-    }
 }

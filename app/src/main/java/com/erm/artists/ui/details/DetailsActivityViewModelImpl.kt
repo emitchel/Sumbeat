@@ -23,6 +23,7 @@ class DetailsActivityViewModelImpl
 
     private val mutableArtistEventDetails: MutableLiveData<StatefulResource<List<EventWithArtist>?>> = MutableLiveData()
     override val artistEventDetails: LiveData<StatefulResource<List<EventWithArtist>?>> = mutableArtistEventDetails
+
     private val mutableImage: MutableLiveData<String?> = MutableLiveData()
     override val artistImage: LiveData<String?> = mutableImage
 
@@ -31,6 +32,8 @@ class DetailsActivityViewModelImpl
 
     private val mutableWebsite: MutableLiveData<String> = MutableLiveData()
     override val artistWebpage: LiveData<String> = mutableWebsite
+
+
 
     override fun getArtistAndEventDetails(artistName: String) {
         launch {
@@ -97,30 +100,33 @@ class DetailsActivityViewModelImpl
                 artistEventDetails.isNetworkIssue() -> {
                     mutableArtistEventDetails.value = StatefulResource<List<EventWithArtist>?>()
                         .apply {
-                        setMessage(R.string.no_network_connection)
-                        setState(StatefulResource.State.ERROR_NETWORK)
-                    }
+                            setMessage(R.string.no_network_connection)
+                            setState(StatefulResource.State.ERROR_NETWORK)
+                        }
                 }
                 artistEventDetails.isApiIssue() ->
                     mutableArtistEventDetails.value = StatefulResource<List<EventWithArtist>?>()
                         .apply {
-                        setState(StatefulResource.State.ERROR_API)
-                        setMessage(R.string.service_error)
-                    }
+                            setState(StatefulResource.State.ERROR_API)
+                            setMessage(R.string.service_error)
+                        }
                 else -> mutableArtistEventDetails.value = StatefulResource<List<EventWithArtist>?>()
                     .apply {
+                        setState(StatefulResource.State.SUCCESS)
+                        setMessage(R.string.artist_not_found)
+                    }
+            }
+        } ?: run {
+
+            mutableArtistEventDetails.value = StatefulResource<List<EventWithArtist>?>()
+                .apply {
                     setState(StatefulResource.State.SUCCESS)
                     setMessage(R.string.artist_not_found)
                 }
-            }
-        } ?: run {
-            mutableArtistEventDetails.value = StatefulResource<List<EventWithArtist>?>()
-                .apply {
-                setState(StatefulResource.State.SUCCESS)
-                setMessage(R.string.artist_not_found)
-            }
         }
     }
+
+    data  class holder(val i : Int, val f : Float)
 
     //Since there's only one artist on the details, we can toggle
     override fun toggleArtistFavoriteValue() {

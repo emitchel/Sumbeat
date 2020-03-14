@@ -2,7 +2,6 @@ package com.erm.artists.ui.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.launch
 import com.erm.artists.R
 import com.erm.artists.data.model.entity.Artist
 import com.erm.artists.data.repository.impl.BandsInTownArtistRepository
@@ -16,18 +15,17 @@ class MainActivityViewModelImpl
     private val bandsInTownArtistRepository: BandsInTownArtistRepository
 ) : BaseViewModel(), MainActivityViewModel {
 
-    private val mutableLastSearchedArtists: MutableLiveData<StatefulResource<List<Artist>?>> = MutableLiveData()
-    override val lastSearchedArtists: LiveData<StatefulResource<List<Artist>?>> = mutableLastSearchedArtists
-
     private val mutableArtistSearch: SingleLiveEvent<StatefulResource<Artist?>> =
         SingleLiveEvent()
     override val artistSearch: LiveData<StatefulResource<Artist?>> = mutableArtistSearch
     private var lastArtistNameSearched: String? = null
 
+    private val _lastSearchedArtists: MutableLiveData<StatefulResource<List<Artist>?>> = MutableLiveData()
+    override val lastSearchedArtists: LiveData<StatefulResource<List<Artist>?>> = _lastSearchedArtists
     override fun getLastSearchedArtists(numberOfArtists: Int) {
+        _lastSearchedArtists.value = StatefulResource.loading()
         launch {
-            mutableLastSearchedArtists.value = StatefulResource.with(
-                StatefulResource.State.SUCCESS,
+            _lastSearchedArtists.value = StatefulResource.success(
                 bandsInTownArtistRepository.getLastArtistsSearched(numberOfArtists)
             )
         }

@@ -32,13 +32,7 @@ class ArtistsApplication : Application(), HasAndroidInjector {
 
     override fun onCreate() {
         super.onCreate()
-//        component = DaggerAppComponent
-//            .builder()
-//            // Required, see [com.erm.artists.di.component.AppComponent.Builder.application]
-//            .application(this)
-//            .build()
-//        component.inject(this)
-
+        
         AppInjector.init(this)
 
         //TODO use injected initializers to setup versions

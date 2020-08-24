@@ -1,4 +1,4 @@
-package com.erm.artists.di.module
+package com.erm.artists.di
 
 import android.app.Activity
 import android.app.Application
@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import com.erm.artists.ArtistsApplication
-import com.erm.artists.di.Injectable
 import com.erm.artists.di.component.DaggerAppComponent
 import dagger.android.AndroidInjection
 import dagger.android.HasAndroidInjector

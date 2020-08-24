@@ -2,7 +2,7 @@ package com.erm.artists
 
 import android.app.Application
 import com.erm.artists.di.component.AppComponent
-import com.erm.artists.di.module.AppInjector
+import com.erm.artists.di.AppInjector
 import com.facebook.flipper.android.AndroidFlipperClient
 import com.facebook.flipper.android.utils.FlipperUtils
 import com.facebook.flipper.core.FlipperClient

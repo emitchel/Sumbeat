@@ -23,22 +23,6 @@ class ApiModule {
     @Provides
     fun providesEnvironmentProvider(): EnvironmentProvider = EnvironmentProviderImpl()
 
-    @Singleton
-    @Provides
-    fun providesBandsInTownInterceptor(): BandsInTownInterceptor =
-        BandsInTownInterceptor()
-
-    @Singleton
-    @Provides
-    fun provideMoshi(): Moshi {
-        val moshi = Moshi.Builder()
-        return moshi.build()
-    }
-
-    @Singleton
-    @Provides
-    fun providesNetworkFlipperPlugin() = NetworkFlipperPlugin()
-
     @Provides
     @Singleton
     fun providesFlipperOkHttpInterceptor(networkFlipper: NetworkFlipperPlugin): FlipperOkhttpInterceptor =
@@ -51,15 +35,14 @@ class ApiModule {
             if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.NONE else HttpLoggingInterceptor.Level.BODY
     }
 
+    /* Shared OkHttpClient */
     @Singleton
     @Provides
     fun provideOkHttpClient(
-        bandsInTownInterceptor: BandsInTownInterceptor,
         flipperInterceptor: FlipperOkhttpInterceptor,
         httpLoggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(bandsInTownInterceptor)
             .addInterceptor(httpLoggingInterceptor)
             .addInterceptor(flipperInterceptor)
             .build()
@@ -67,20 +50,35 @@ class ApiModule {
 
     @Singleton
     @Provides
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder().build()
+    }
+
+
+    @Singleton
+    @Provides
+    fun providesNetworkFlipperPlugin() = NetworkFlipperPlugin()
+
+
+
+    @Singleton
+    @Provides
     fun providesBandsInTownRetrofit(
         okHttpClient: OkHttpClient,
         moshi: Moshi
     ): Retrofit {
+        // Customize shared okhttp client
+        var client: OkHttpClient =  okHttpClient.newBuilder()
+            .addInterceptor(BandsInTownInterceptor())
+            .build()
+
         val retrofit = Retrofit.Builder()
             .client(okHttpClient)
             .baseUrl(BuildConfig.BandsInTownUrl)
-            .addConverterFactory(
-                MoshiConverterFactory
-                    .create(moshi)
-            )
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+
         return retrofit.build()
     }
-
     @Singleton
     @Provides
     fun providesBandsInTownApi(retrofit: Retrofit): BandsInTownApi =

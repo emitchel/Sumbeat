@@ -3,6 +3,8 @@ package com.erm.artists.di.module
 import com.erm.artists.BuildConfig
 import com.erm.artists.data.api.BandsInTownApi
 import com.erm.artists.data.api.interceptor.BandsInTownInterceptor
+import com.erm.artists.data.api.interceptor.HostInterceptor
+import com.erm.artists.data.api.provider.*
 import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.squareup.moshi.Moshi
@@ -19,19 +21,7 @@ class ApiModule {
 
     @Singleton
     @Provides
-    fun providesBandsInTownInterceptor(): BandsInTownInterceptor =
-        BandsInTownInterceptor()
-
-    @Singleton
-    @Provides
-    fun provideMoshi(): Moshi {
-        val moshi = Moshi.Builder()
-        return moshi.build()
-    }
-
-    @Singleton
-    @Provides
-    fun providesNetworkFlipperPlugin() = NetworkFlipperPlugin()
+    fun providesEnvironmentProvider(): EnvironmentProvider = EnvironmentProviderImpl()
 
     @Provides
     @Singleton
@@ -45,15 +35,14 @@ class ApiModule {
             if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.NONE else HttpLoggingInterceptor.Level.BODY
     }
 
+    /* Shared OkHttpClient */
     @Singleton
     @Provides
     fun provideOkHttpClient(
-        bandsInTownInterceptor: BandsInTownInterceptor,
         flipperInterceptor: FlipperOkhttpInterceptor,
         httpLoggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(bandsInTownInterceptor)
             .addInterceptor(httpLoggingInterceptor)
             .addInterceptor(flipperInterceptor)
             .build()
@@ -61,20 +50,47 @@ class ApiModule {
 
     @Singleton
     @Provides
-    fun providesBandsInTownRetrofit(
-        okHttpClient: OkHttpClient,
-        moshi: Moshi
-    ): Retrofit {
-        val retrofit = Retrofit.Builder()
-            .client(okHttpClient)
-            .baseUrl(BuildConfig.BandsInTownUrl)
-            .addConverterFactory(
-                MoshiConverterFactory
-                    .create(moshi)
-            )
-        return retrofit.build()
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder().build()
     }
 
+
+    @Singleton
+    @Provides
+    fun providesNetworkFlipperPlugin() = NetworkFlipperPlugin()
+
+
+
+    @Singleton
+    @Provides
+    fun providesBandsInTownRetrofit(
+        okHttpClient: OkHttpClient,
+        moshi: Moshi,
+        environmentProvider: EnvironmentProvider
+    ): Retrofit {
+
+        // Customize shared okhttp client
+        var client: OkHttpClient =  okHttpClient.newBuilder()
+            .addInterceptor(BandsInTownInterceptor())
+            .addInterceptor(
+                HostInterceptor(
+                    HostSettingProviderImpl(
+                        HostSetting("https", "rest.bandsintown.com"), // DEV
+                        HostSetting("https", "rest.bandsintown.com"), // STG
+                        HostSetting("https", "rest.bandsintown.com"), // LIVE
+                        environmentProvider
+                    )
+                )
+            )
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .client(client)
+            .baseUrl(BuildConfig.BandsInTownUrl)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+
+        return retrofit.build()
+    }
     @Singleton
     @Provides
     fun providesBandsInTownApi(retrofit: Retrofit): BandsInTownApi =

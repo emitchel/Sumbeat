@@ -85,7 +85,7 @@ class ApiModule {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .client(okHttpClient)
+            .client(client)
             .baseUrl(BuildConfig.BandsInTownUrl)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
 

@@ -3,6 +3,8 @@ package com.erm.artists.di.module
 import com.erm.artists.BuildConfig
 import com.erm.artists.data.api.BandsInTownApi
 import com.erm.artists.data.api.interceptor.BandsInTownInterceptor
+import com.erm.artists.data.api.provider.EnvironmentProvider
+import com.erm.artists.data.api.provider.EnvironmentProviderImpl
 import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.squareup.moshi.Moshi
@@ -16,6 +18,10 @@ import javax.inject.Singleton
 
 @Module
 class ApiModule {
+
+    @Singleton
+    @Provides
+    fun providesEnvironmentProvider(): EnvironmentProvider = EnvironmentProviderImpl()
 
     @Singleton
     @Provides

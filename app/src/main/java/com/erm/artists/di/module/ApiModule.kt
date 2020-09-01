@@ -3,8 +3,8 @@ package com.erm.artists.di.module
 import com.erm.artists.BuildConfig
 import com.erm.artists.data.api.BandsInTownApi
 import com.erm.artists.data.api.interceptor.BandsInTownInterceptor
-import com.erm.artists.data.api.provider.EnvironmentProvider
-import com.erm.artists.data.api.provider.EnvironmentProviderImpl
+import com.erm.artists.data.api.interceptor.HostInterceptor
+import com.erm.artists.data.api.provider.*
 import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.squareup.moshi.Moshi
@@ -65,11 +65,23 @@ class ApiModule {
     @Provides
     fun providesBandsInTownRetrofit(
         okHttpClient: OkHttpClient,
-        moshi: Moshi
+        moshi: Moshi,
+        environmentProvider: EnvironmentProvider
     ): Retrofit {
+
         // Customize shared okhttp client
         var client: OkHttpClient =  okHttpClient.newBuilder()
             .addInterceptor(BandsInTownInterceptor())
+            .addInterceptor(
+                HostInterceptor(
+                    HostSettingProviderImpl(
+                        HostSetting("https", "rest.bandsintown.com"), // DEV
+                        HostSetting("https", "rest.bandsintown.com"), // STG
+                        HostSetting("https", "rest.bandsintown.com"), // LIVE
+                        environmentProvider
+                    )
+                )
+            )
             .build()
 
         val retrofit = Retrofit.Builder()
